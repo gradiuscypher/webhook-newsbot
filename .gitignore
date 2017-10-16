@@ -1,3 +1,7 @@
+# Gradius Ignores
+vendor/
+.idea/
+
 # Binaries for programs and plugins
 *.exe
 *.dll
