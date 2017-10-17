@@ -12,7 +12,8 @@ func main() {
 	fmt.Println(feed.UpdatedParsed)
 
 	for _, item := range feed.Items {
-		fmt.Println(item.Title)
-		fmt.Println(item.Description)
+		fmt.Println(item.Title + " [" + item.PublishedParsed.String() + "]")
+		fmt.Println("===========")
+		fmt.Println(item.Description + "\n")
 	}
 }
