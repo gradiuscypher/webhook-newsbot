@@ -1,6 +1,7 @@
 # Gradius Ignores
 vendor/
 .idea/
+webhook-newsbot
 
 # Binaries for programs and plugins
 *.exe
