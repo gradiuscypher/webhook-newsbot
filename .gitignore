@@ -2,6 +2,7 @@
 vendor/
 .idea/
 webhook-newsbot
+config.json
 
 # Binaries for programs and plugins
 *.exe
