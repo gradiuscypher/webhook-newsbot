@@ -121,6 +121,30 @@ func parseBugBountyForum() {
 	updateLastPostDate(sourceStr)
 }
 
+func parseHackerOneDisclosure() {
+	//source := "hackerone"
+	// TODO: Need to use something like PhantomGo to load the Javascript
+
+	url := "https://hackerone.com/hacktivity?sort_type=latest_disclosable_activity_at&filter=type%3Apublic&page=1&range=forever"
+	resp, err := http.Get(url)
+	if err != nil {
+		panic(err)
+	}
+
+	root, err := html.Parse(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(root)
+
+	disclosures := scrape.FindAll(root, scrape.ByClass("hacktivity__wrapper"))
+
+	for _, disclosure := range disclosures {
+		fmt.Println(disclosure)
+	}
+}
+
 func postWebhook(title string, source string, summary string, url string, date string) int {
 	titleUrl := "**[" + title + "]("+ url + ")**"
 	summaryString := "```" + date + "\n" + summary + "```"
@@ -166,5 +190,7 @@ func main() {
 	webhookUrl = viper.GetString("webhookUrl")
 
 	// This is where we execute all of our checkers
-	parseBugBountyForum()
+	//parseBugBountyForum()
+	//parseHackerOneDisclosure()
+	//rssParser()
 }
