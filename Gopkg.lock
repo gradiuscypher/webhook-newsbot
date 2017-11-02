@@ -32,6 +32,12 @@
   version = "v1.7.3"
 
 [[projects]]
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "5160b48509cf5c877bc22c11c373f8c7738cdb38"
+  version = "v1.3.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
@@ -94,7 +100,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["html","html/atom","html/charset"]
+  packages = ["context","html","html/atom","html/charset"]
   revision = "a04bdaca5b32abe1c069418fb7088ae607de5bd0"
 
 [[projects]]
@@ -118,6 +124,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "259db4815c0fb077dd7a13801694533109c0131fe8690bd1bfa38e0bd1ccacb2"
+  inputs-digest = "7f2d28fc215f23b7d6f0db74d11cdd1c27f735bfa4d41fa05c81b45ea9a266a7"
   solver-name = "gps-cdcl"
   solver-version = 1

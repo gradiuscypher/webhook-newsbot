@@ -4,21 +4,86 @@ import (
 	"fmt"
 	"time"
 	"net/http"
-	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 	"github.com/spf13/viper"
 	"github.com/mmcdole/gofeed"
+	"github.com/yhat/scrape"
 	"encoding/json"
 	"bytes"
+	"database/sql"
+	"log"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
 	webhookUrl	string
 )
 
+func updateLastPostDate(source string) {
+	currentTime := time.Now()
 
-func parseBugBountyForum(checkDate time.Time) {
+	// Setup the SQLite DB for tracking posts
+	db, err := sql.Open("sqlite3", "posts.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	statement, err := db.Prepare("UPDATE posts SET lastDate = ? WHERE source = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	statement.Exec(currentTime.String(), source)
+}
+
+func getLastPostDate(source string) (time.Time) {
+	var lastDate time.Time
+	var lastDateStr string
+	currentTime := time.Now()
+
+	// Setup the SQLite DB for tracking posts
+	db, err := sql.Open("sqlite3", "posts.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Create the DB if it doesn't exist
+	db.Exec("CREATE TABLE IF NOT EXISTS posts (id integer PRIMARY KEY, source text NOT NULL, lastDate text)")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Look up the last post date
+	err = db.QueryRow("SELECT lastDate FROM posts WHERE source = ?", source).Scan(&lastDateStr)
+	if err == sql.ErrNoRows {
+		// If no date was found, return current date and save to DB
+		statement, err := db.Prepare("INSERT INTO posts(source, lastDate) VALUES(?, ?)")
+		if err != nil {
+			log.Fatal(err)
+		}
+		statement.Exec(source, currentTime.String())
+		return currentTime
+
+	} else if err != nil {
+		// Something broke and it wasn't a nil date string
+		log.Fatal(err)
+	}
+
+	// Return the last found date string
+	timeLayout := "2006-01-02 15:04:05 -0700 MST"
+	fmt.Println("Now parsing:", lastDateStr)
+	lastDate, _ = time.Parse(timeLayout, lastDateStr)
+	return lastDate
+}
+
+func parseBugBountyForum() {
+	sourceStr := "bugbountyforum"
+
+	// Get the last BugBountyFourm post date that was processed
+	lastUpdate := getLastPostDate(sourceStr)
+
 	url := "https://bugbountyforum.com/blogs/"
 	resp, err := http.Get(url)
 	if err != nil {
@@ -48,11 +113,12 @@ func parseBugBountyForum(checkDate time.Time) {
 		parsedDate, _ := time.Parse(dateFormat, dateText)
 
 		// Check to see if the article was published after the last time we checked
-		if parsedDate.Before(checkDate) {
+		if parsedDate.After(lastUpdate) {
 			// This is where we ship a link to Discord Webhooks
 			postWebhook(titleText, "Bug Bounty Forum", summaryText, urlText, dateText)
 		}
 	}
+	updateLastPostDate(sourceStr)
 }
 
 func postWebhook(title string, source string, summary string, url string, date string) int {
@@ -100,6 +166,5 @@ func main() {
 	webhookUrl = viper.GetString("webhookUrl")
 
 	// This is where we execute all of our checkers
-	currentTime := time.Now()
-	parseBugBountyForum(currentTime)
+	parseBugBountyForum()
 }
