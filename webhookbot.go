@@ -20,6 +20,37 @@ var (
 	webhookUrl	string
 )
 
+type Footer struct {
+	Text string`json:"text"`
+	IconUrl string`json:"icon_url"`
+	ProxyIconUrl string`json:"proxy_icon_url"`
+}
+
+type EmbedField struct {
+	Name string`json:"name"`
+	Value string`json:"value"`
+	Inline bool`json:"inline"`
+}
+
+type EmbedThumbnail struct {
+	Url string`json:"url"`
+}
+
+type MessageEmbed struct {
+	Title string`json:"title"`
+	Description string`json:"description"`
+	Url string`json:"url"`
+	Color int64`json:"color"`
+	//Fields []EmbedField`json:"fields"`
+	EmbedThumbnail EmbedThumbnail`json:"thumbnail"`
+	Footer Footer`json:"footer"`
+}
+
+type WebhookEmbedMessage struct {
+	Embed []MessageEmbed`json:"embeds"`
+	Username string`json:"username"`
+}
+
 func updateLastPostDate(source string) {
 	currentTime := time.Now()
 
@@ -85,6 +116,7 @@ func parseBugBountyForum() {
 	lastUpdate := getLastPostDate(sourceStr)
 
 	url := "https://bugbountyforum.com/blogs/"
+	imageUrl := "https://pbs.twimg.com/profile_images/941769675611836416/xiEzOny3_400x400.jpg"
 	resp, err := http.Get(url)
 	if err != nil {
 		panic(err)
@@ -115,7 +147,7 @@ func parseBugBountyForum() {
 		// Check to see if the article was published after the last time we checked
 		if parsedDate.After(lastUpdate) {
 			// This is where we ship a link to Discord Webhooks
-			postWebhook(titleText, "Bug Bounty Forum", summaryText, urlText, dateText)
+			postWebhookEmbed(titleText, "Bug Bounty Fourm", summaryText, urlText, dateText, imageUrl)
 		}
 	}
 	updateLastPostDate(sourceStr)
@@ -164,6 +196,43 @@ func postWebhook(title string, source string, summary string, url string, date s
 	return response.StatusCode
 }
 
+func postWebhookEmbed(title string, source string, summary string, url string, date string, imageUrl string) int {
+	footer := Footer {
+		Text: date,
+	}
+	embedImage := EmbedThumbnail{
+		Url: imageUrl,
+	}
+
+	embedList := []MessageEmbed {
+		{
+			Title: title,
+			Url: url,
+			Description: summary,
+			Color: 4504154,
+			Footer: footer,
+			EmbedThumbnail: embedImage,
+		},
+	}
+
+	whMessage := WebhookEmbedMessage {
+		Embed: embedList,
+		Username: source,
+	}
+
+	jsonData, _ := json.Marshal(whMessage)
+	request, _ := http.NewRequest("POST", webhookUrl, bytes.NewBuffer(jsonData))
+	request.Header.Set("Content-Type", "application/json")
+
+	client := http.Client{}
+	response, err := client.Do(request)
+
+	if err != nil {
+		panic(err)
+	}
+	return response.StatusCode
+}
+
 func rssParser()  {
 	// Example RSS Parsing
 	feedParser := gofeed.NewParser()
@@ -190,7 +259,7 @@ func main() {
 	webhookUrl = viper.GetString("webhookUrl")
 
 	// This is where we execute all of our checkers
-	//parseBugBountyForum()
+	parseBugBountyForum()
 	//parseHackerOneDisclosure()
 	//rssParser()
 }
