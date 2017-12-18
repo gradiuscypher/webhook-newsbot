@@ -111,7 +111,6 @@ func getLastPostDate(source string) (time.Time) {
 
 	// Return the last found date string
 	timeLayout := "2006-01-02 15:04:05 -0700 MST"
-	fmt.Println("Now parsing:", lastDateStr)
 	lastDate, _ = time.Parse(timeLayout, lastDateStr)
 	return lastDate
 }
@@ -276,7 +275,6 @@ func rssParser(feedUrl string, feedIconUrl string, feedName string)  {
 
 	for _, item := range feed.Items {
 		if item.PublishedParsed.After(lastUpdate) {
-			//fmt.Println(feed.Title + " " + item.Title, item.Description, item.Link, item.PublishedParsed.String())
 			postWebhookEmbed(feed.Title + " - " + item.Title, feedName, item.Description, item.Link, item.PublishedParsed.String(), feedIconUrl)
 		}
 	}
@@ -295,7 +293,6 @@ func main() {
 	webhookUrl = viper.GetString("webhookUrl")
 
 	// This is where we execute all of our checkers
-	//parseBugBountyForum()
-	//parseHackerOneDisclosure()
+	parseBugBountyForum()
 	parseRssFeeds()
 }
