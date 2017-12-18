@@ -1,0 +1,12 @@
+[
+  {
+    "feed_url": "https://krebsonsecurity.com/feed/",
+    "feed_name": "KrebsOnSecurity",
+    "feed_icon_url": "https://imgur.com/KvmLr5f.png"
+  },
+  {
+    "feed_url": "https://threatpost.com/feed/",
+    "feed_name": "ThreatPost",
+    "feed_icon_url": "https://imgur.com/sJezPxQ.png"
+  }
+]

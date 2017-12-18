@@ -14,6 +14,7 @@ import (
 	"database/sql"
 	"log"
 	_ "github.com/mattn/go-sqlite3"
+	"io/ioutil"
 )
 
 var (
@@ -49,6 +50,12 @@ type MessageEmbed struct {
 type WebhookEmbedMessage struct {
 	Embed []MessageEmbed`json:"embeds"`
 	Username string`json:"username"`
+}
+
+type RssFeed struct {
+	FeedUrl string`json:"feed_url"`
+	FeedName string`json:"feed_name"`
+	FeedIconUrl string`json:"feed_icon_url"`
 }
 
 func updateLastPostDate(source string) {
@@ -177,6 +184,21 @@ func parseHackerOneDisclosure() {
 	}
 }
 
+func parseRssFeeds() {
+	// Parse the feed settings from the json file
+	var feedList []RssFeed
+	jsonFile, err := ioutil.ReadFile("feeds.json")
+	if err != nil {
+		panic(err)
+	}
+	json.Unmarshal(jsonFile, &feedList)
+
+	// Iterate through each item in the feed list
+	for _, item := range feedList {
+		rssParser(item.FeedUrl, item.FeedIconUrl, item.FeedName)
+	}
+}
+
 func postWebhook(title string, source string, summary string, url string, date string) int {
 	titleUrl := "**[" + title + "]("+ url + ")**"
 	summaryString := "```" + date + "\n" + summary + "```"
@@ -230,21 +252,35 @@ func postWebhookEmbed(title string, source string, summary string, url string, d
 	if err != nil {
 		panic(err)
 	}
+
+	// Try it one more time if it didn't work, but sleep beforehand
+	if response.StatusCode != 204 {
+		time.Sleep(2)
+
+		client := http.Client{}
+		client.Do(request)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	return response.StatusCode
 }
 
-func rssParser()  {
+func rssParser(feedUrl string, feedIconUrl string, feedName string)  {
 	// Example RSS Parsing
 	feedParser := gofeed.NewParser()
-	feed, _ := feedParser.ParseURL("https://threatpost.com/feed/")
-	fmt.Println(feed.Title)
-	fmt.Println(feed.UpdatedParsed)
+	feed, _ := feedParser.ParseURL(feedUrl)
+	lastUpdate := getLastPostDate(feed.Title)
 
 	for _, item := range feed.Items {
-		fmt.Println(item.Title + " [" + item.PublishedParsed.String() + "]")
-		fmt.Println("===========")
-		fmt.Println(item.Description + "\n")
+		if item.PublishedParsed.After(lastUpdate) {
+			//fmt.Println(feed.Title + " " + item.Title, item.Description, item.Link, item.PublishedParsed.String())
+			postWebhookEmbed(feed.Title + " - " + item.Title, feedName, item.Description, item.Link, item.PublishedParsed.String(), feedIconUrl)
+		}
 	}
+	updateLastPostDate(feed.Title)
 }
 
 func main() {
@@ -259,7 +295,7 @@ func main() {
 	webhookUrl = viper.GetString("webhookUrl")
 
 	// This is where we execute all of our checkers
-	parseBugBountyForum()
+	//parseBugBountyForum()
 	//parseHackerOneDisclosure()
-	//rssParser()
+	parseRssFeeds()
 }
