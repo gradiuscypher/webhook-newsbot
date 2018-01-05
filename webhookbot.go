@@ -276,9 +276,9 @@ func rssParser(feedUrl string, feedIconUrl string, feedName string)  {
 	for _, item := range feed.Items {
 		if item.PublishedParsed.After(lastUpdate) {
 			postWebhookEmbed(feed.Title + " - " + item.Title, feedName, item.Description, item.Link, item.PublishedParsed.String(), feedIconUrl)
+			updateLastPostDate(feed.Title)
 		}
 	}
-	updateLastPostDate(feed.Title)
 }
 
 func main() {
