@@ -110,8 +110,6 @@ func getLastPostDate(source string) (time.Time) {
 	}
 
 	// Return the last found date string
-	//timeLayout := "2006-01-02 15:04:05 -0700 MST"
-	//lastDate, _ = time.Parse(timeLayout, lastDateStr)
 	lastDate, _ = time.Parse(time.UnixDate, lastDateStr)
 	return lastDate
 }
