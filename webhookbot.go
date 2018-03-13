@@ -72,7 +72,7 @@ func updateLastPostDate(source string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	statement.Exec(currentTime.String(), source)
+	statement.Exec(currentTime.Format(time.UnixDate), source)
 }
 
 func getLastPostDate(source string) (time.Time) {
@@ -110,8 +110,9 @@ func getLastPostDate(source string) (time.Time) {
 	}
 
 	// Return the last found date string
-	timeLayout := "2006-01-02 15:04:05 -0700 MST"
-	lastDate, _ = time.Parse(timeLayout, lastDateStr)
+	//timeLayout := "2006-01-02 15:04:05 -0700 MST"
+	//lastDate, _ = time.Parse(timeLayout, lastDateStr)
+	lastDate, _ = time.Parse(time.UnixDate, lastDateStr)
 	return lastDate
 }
 
@@ -276,6 +277,7 @@ func rssParser(feedUrl string, feedIconUrl string, feedName string)  {
 	feedParser := gofeed.NewParser()
 	feed, _ := feedParser.ParseURL(feedUrl)
 	lastUpdate := getLastPostDate(feed.Title)
+	fmt.Println(feed.Title, lastUpdate)
 
 	for _, item := range feed.Items {
 		if item.PublishedParsed.After(lastUpdate) {
