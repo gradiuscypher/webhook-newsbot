@@ -218,6 +218,10 @@ func postWebhook(title string, source string, summary string, url string, date s
 }
 
 func postWebhookEmbed(title string, source string, summary string, url string, date string, imageUrl string) int {
+	if len(summary) > 256 {
+		summary = summary[0:256] + "[...]"
+	}
+
 	footer := Footer {
 		Text: date,
 	}

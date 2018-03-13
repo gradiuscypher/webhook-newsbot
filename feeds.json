@@ -8,5 +8,15 @@
     "feed_url": "https://threatpost.com/feed/",
     "feed_name": "ThreatPost",
     "feed_icon_url": "https://imgur.com/sJezPxQ.png"
+  },
+  {
+    "feed_url": "https://motherboard.vice.com/en_us/rss",
+    "feed_name": "Motherboard",
+    "feed_icon_url": "https://i.imgur.com/nwSpCjF.png"
+  },
+  {
+    "feed_url": "https://risky.biz/feeds/risky-business/",
+    "feed_name": "Risky.biz",
+    "feed_icon_url": "https://i.imgur.com/nwSpCjF.png"
   }
 ]
